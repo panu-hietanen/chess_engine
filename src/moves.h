@@ -7,6 +7,8 @@ typedef struct {
 	int x, y;
 } Point;
 
+Point point_invalid();
+
 typedef struct {
 	Point from, to;
 } Move;

@@ -17,8 +17,6 @@ typedef enum {
 
 typedef enum { PIECE_WHITE, PIECE_BLACK } PieceColour;
 
-Point point_invalid();
-
 bool move_valid_pawn(Move move, PieceColour colour);
 bool move_valid_pawn_capture(Move move, PieceColour colour);
 bool move_valid_rook(Move move);

@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "moves.h"
+
 typedef enum {
 	PIECE_PAWN,
 	PIECE_ROOK,
@@ -15,18 +17,14 @@ typedef enum {
 
 typedef enum { PIECE_WHITE, PIECE_BLACK } PieceColour;
 
-typedef struct {
-	int x, y;
-} Point;
-
 Point point_invalid();
 
-bool move_valid_pawn(Point from, Point to, PieceColour colour);
-bool move_valid_pawn_capture(Point from, Point to, PieceColour colour);
-bool move_valid_rook(Point from, Point to);
-bool move_valid_knight(Point from, Point to);
-bool move_valid_bishop(Point from, Point to);
-bool move_valid_queen(Point from, Point to);
-bool move_valid_king(Point from, Point to);
+bool move_valid_pawn(Move move, PieceColour colour);
+bool move_valid_pawn_capture(Move move, PieceColour colour);
+bool move_valid_rook(Move move);
+bool move_valid_knight(Move move);
+bool move_valid_bishop(Move move);
+bool move_valid_queen(Move move);
+bool move_valid_king(Move move);
 
 #endif //PIECE_H__

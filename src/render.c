@@ -96,8 +96,8 @@ void board_draw_moves(const Board* b, Point clicked)
 		for (int j = 0; j < BOARD_CELLS; ++j)
 		{
 			Point to = { .x = i, .y = j };
-
-			if (!board_move_valid(b, clicked, to)) continue;
+			
+			if (!board_move_valid(b, move_make(clicked, to))) continue;
 
 			DrawCircle(
 				BOARD_OFFSET_X + i * CELL_SIZE + CELL_SIZE / 2,

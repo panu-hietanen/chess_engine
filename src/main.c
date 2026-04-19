@@ -57,9 +57,9 @@ int main() {
 				if (board_mouse_over(x, y))
 				{
 					Point newSelection = board_mouse_coords(x, y);
-					if (board_move_valid(&b, selectedPiece, newSelection))
+					if (board_move_valid(&b, move_make(selectedPiece, newSelection)))
 					{
-						MoveResult moveResult = board_register_move(&b, selectedPiece, newSelection);
+						MoveResult moveResult = board_register_move(&b, move_make(selectedPiece, newSelection));
 						switch (moveResult)
 						{
 						case MOVE_OK:

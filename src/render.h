@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 
+#include "moves.h"
 #include "piece.h"
 #include "board.h"
 #include "ui.h"

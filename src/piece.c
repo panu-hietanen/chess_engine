@@ -12,8 +12,10 @@ Point point_invalid()
 	return (Point) { .x = -1, .y = -1 };
 }
 
-bool move_valid_pawn(Point from, Point to, PieceColour colour)
+bool move_valid_pawn(Move move, PieceColour colour)
 {
+	Point from = move.from;
+	Point to = move.to;
 	bool firstMove = false;
 	switch (colour) {
 	case PIECE_WHITE:
@@ -25,38 +27,40 @@ bool move_valid_pawn(Point from, Point to, PieceColour colour)
 	}
 }
 
-bool move_valid_pawn_capture(Point from, Point to, PieceColour colour)
+bool move_valid_pawn_capture(Move move, PieceColour colour)
 {
 	switch (colour) {
 	case PIECE_WHITE:
-		return (abs(from.x - to.x) == 1 && to.y - from.y == 1);
+		return (abs(move.from.x - move.to.x) == 1 && move.to.y - move.from.y == 1);
 	case PIECE_BLACK:
-		return (abs(from.x - to.x) == 1 && from.y - to.y == 1);
+		return (abs(move.from.x - move.to.x) == 1 && move.from.y - move.to.y == 1);
 	}
 }
 
-bool move_valid_rook(Point from, Point to)
+bool move_valid_rook(Move move)
 {
-	return (from.x == to.x || from.y == to.y);
+	return (move.from.x == move.to.x || move.from.y == move.to.y);
 }
 
-bool move_valid_knight(Point from, Point to)
+bool move_valid_knight(Move move)
 {
-	return ((abs(from.x - to.x) == 2 && abs(from.y - to.y) == 1 ||
-		abs(from.x - to.x) == 1 && abs(from.y - to.y) == 2));
+	return ((abs(move.from.x - move.to.x) == 2 && abs(move.from.y - move.to.y) == 1 ||
+		abs(move.from.x - move.to.x) == 1 && abs(move.from.y - move.to.y) == 2));
 }
 
-bool move_valid_bishop(Point from, Point to)
+bool move_valid_bishop(Move move)
 {
-	return (abs(from.x - to.x) == abs(from.y - to.y));
+	Point from = move.from;
+	Point to = move.to;
+	return (abs(move.from.x - move.to.x) == abs(move.from.y - move.to.y));
 }
 
-bool move_valid_queen(Point from, Point to)
+bool move_valid_queen(Move move)
 {
-	return move_valid_rook(from, to) || move_valid_bishop(from, to);
+	return move_valid_rook(move) || move_valid_bishop(move);
 }
 
-bool move_valid_king(Point from, Point to)
+bool move_valid_king(Move move)
 {
-	return abs(from.x - to.x) <= 1 && abs(from.y - to.y) <= 1;
+	return abs(move.from.x - move.to.x) <= 1 && abs(move.from.y - move.to.y) <= 1;
 }

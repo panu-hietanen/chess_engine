@@ -2,11 +2,16 @@
 #define MOVES_H__
 
 #include "config.h"
-#include "piece.h"
+
+typedef struct {
+	int x, y;
+} Point;
 
 typedef struct {
 	Point from, to;
 } Move;
+
+Move move_make(Point from, Point to);
 
 typedef struct {
 	Move data[MAX_MOVE_ARR_SIZE];

@@ -9,6 +9,8 @@
 #define BACKGROUND_COLOUR	  BROWN
 #define MOVE_IND_RADIUS       10
 
+#define MAX_MOVE_ARR_SIZE	  256
+
 #define PIECE_W				  80
 #define PIECE_H				  80
 #define NUM_PIECE_TYPES		  6

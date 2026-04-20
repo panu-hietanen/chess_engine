@@ -7,6 +7,8 @@
 
 void engine_search(const Board* b, MoveArray* arr);
 
+int board_evaluate(const Board* b);
+
 int piece_value(PieceType piece);
 
 #endif //ENGINE_H__

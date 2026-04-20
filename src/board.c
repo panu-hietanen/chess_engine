@@ -511,30 +511,9 @@ bool board_no_moves(const Board* b, PieceColour colourToCheck)
 {
 	Board b_copy = *b;
 	b_copy.turn = colourToCheck;
-	for (int i = 0; i < BOARD_CELLS; ++i)
-	{
-		for (int j = 0; j < BOARD_CELLS; ++j)
-		{
-			int piece = b->state[i][j];
-			if (piece < 0) continue;
-			PieceColour c = get_piece_colour(piece);
-			PieceType t = get_piece_type(piece);
-			if (c != colourToCheck) continue;
-			for (int ii = 0; ii < BOARD_CELLS; ++ii)
-			{
-				for (int jj = 0; jj < BOARD_CELLS; ++jj)
-				{
-					Point from = { .x = i, .y = j };
-					Point to = { .x = ii, .y = jj };
-					if (board_move_valid(&b_copy, move_make(from, to)))
-					{
-						return false;
-					}
-				}
-			}
-		}
-	}
-	return true;
+	MoveArray arr = move_array_init();
+	engine_search(&b_copy, &arr);
+	return arr.len == 0;
 }
 
 bool board_blocked_pawn(const Board* b, Move move)

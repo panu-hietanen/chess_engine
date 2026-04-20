@@ -121,42 +121,6 @@ MoveResult board_register_move(Board* b, Move move)
 	return MOVE_OK;
 }
 
-void engine_search(const Board* b, MoveArray* arr)
-{
-	for (int i = 0; i < BOARD_CELLS; ++i)
-	{
-		for (int j = 0; j < BOARD_CELLS; ++j)
-		{
-			int piece = b->state[i][j];
-			if (piece < 0) continue;
-			if (get_piece_colour(piece) != b->turn) continue;
-
-			Point from = (Point){ .x = i, .y = j };
-			switch (get_piece_type(piece))
-			{
-			case PIECE_PAWN:
-				board_search_pawn(b, arr, from);
-				break;
-			case PIECE_ROOK:
-				board_search_rook(b, arr, from);
-				break;
-			case PIECE_KNIGHT:
-				board_search_knight(b, arr, from);
-				break;
-			case PIECE_BISHOP:
-				board_search_bishop(b, arr, from);
-				break;
-			case PIECE_QUEEN:
-				board_search_queen(b, arr, from);
-				break;
-			case PIECE_KING:
-				board_search_king(b, arr, from);
-				break;
-			}
-		}
-	}
-}
-
 void board_next_turn(Board* b)
 {
 	b->turn = (b->turn == PIECE_WHITE) ? PIECE_BLACK : PIECE_WHITE;

@@ -12,6 +12,7 @@ add_executable(chess_engine
     src/render.c
     src/ui.c
     src/moves.c
+    src/engine.c
 )
 
 target_include_directories(chess_engine PRIVATE src)

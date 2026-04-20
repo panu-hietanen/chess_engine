@@ -26,9 +26,17 @@ Board board_init();
 Board board_init_game();
 
 MoveResult board_register_move(Board* b, Move move);
+void engine_search(const Board* b, MoveArray* arr);
 void board_next_turn(Board* b);
 void board_pawn_promote(Board* b, Point from, PieceType type);
 Point board_find_king(const Board* b, PieceColour colour);
+
+void board_search_pawn(const Board* b, MoveArray* arr, Point from);
+void board_search_rook(const Board* b, MoveArray* arr, Point from);
+void board_search_knight(const Board* b, MoveArray* arr, Point from);
+void board_search_bishop(const Board* b, MoveArray* arr, Point from);
+void board_search_queen(const Board* b, MoveArray* arr, Point from);
+void board_search_king(const Board* b, MoveArray* arr, Point from);
 
 bool board_move_valid(const Board* b, Move move);
 bool board_is_en_passant(const Board* b, Move move);

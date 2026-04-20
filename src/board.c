@@ -121,6 +121,42 @@ MoveResult board_register_move(Board* b, Move move)
 	return MOVE_OK;
 }
 
+void engine_search(const Board* b, MoveArray* arr)
+{
+	for (int i = 0; i < BOARD_CELLS; ++i)
+	{
+		for (int j = 0; j < BOARD_CELLS; ++j)
+		{
+			int piece = b->state[i][j];
+			if (piece < 0) continue;
+			if (get_piece_colour(piece) != b->turn) continue;
+
+			Point from = (Point){ .x = i, .y = j };
+			switch (get_piece_type(piece))
+			{
+			case PIECE_PAWN:
+				board_search_pawn(b, arr, from);
+				break;
+			case PIECE_ROOK:
+				board_search_rook(b, arr, from);
+				break;
+			case PIECE_KNIGHT:
+				board_search_knight(b, arr, from);
+				break;
+			case PIECE_BISHOP:
+				board_search_bishop(b, arr, from);
+				break;
+			case PIECE_QUEEN:
+				board_search_queen(b, arr, from);
+				break;
+			case PIECE_KING:
+				board_search_king(b, arr, from);
+				break;
+			}
+		}
+	}
+}
+
 void board_next_turn(Board* b)
 {
 	b->turn = (b->turn == PIECE_WHITE) ? PIECE_BLACK : PIECE_WHITE;
@@ -149,6 +185,166 @@ Point board_find_king(const Board* b, PieceColour colour)
 	}
 	return point_invalid();
 }
+
+void board_search_pawn(const Board* b, MoveArray* arr, Point from)
+{
+	int step = (b->turn == PIECE_WHITE) ? 1 : -1;
+	int startRank = (b->turn == PIECE_WHITE) ? 1 : 6;
+
+	Point one = point_make(from.x, from.y + step);
+	Move m = move_make(from, one);
+	if (one.y >= 0 && one.y < BOARD_CELLS && board_move_valid(b, m))
+		move_array_push(arr, m);
+
+	if (from.y == startRank)
+	{
+		Point two = point_make(from.x, from.y + 2 * step);
+		m = move_make(from, two);
+		if (board_move_valid(b, m))
+			move_array_push(arr, m);
+	}
+
+	int captures[2] = { from.x - 1, from.x + 1 };
+	for (int i = 0; i < 2; ++i)
+	{
+		if (captures[i] < 0 || captures[i] > BOARD_CELLS) continue;
+		Point cap = point_make(captures[i], from.y + step);
+		m = move_make(from, cap);
+		if (board_move_valid(b, m))
+			move_array_push(arr, m);
+	}
+}
+
+void board_search_rook(const Board* b, MoveArray* arr, Point from)
+{
+	int stepx[4] = { -1, 1, 0, 0 };
+	int stepy[4] = { 0, 0, 1, -1 };
+
+	for (int i = 0; i < 4; ++i)
+	{
+		Point at = from;
+		at.x += stepx[i];
+		at.y += stepy[i];
+		while (at.x < BOARD_CELLS && at.x >= 0 &&
+			at.y < BOARD_CELLS && at.y >= 0)
+		{
+			Move m = move_make(from, at);
+			bool occupied = b->state[at.x][at.y] >= 0;
+			if (board_move_valid(b, m))
+				move_array_push(arr, m);
+			if (occupied) break;
+			at.x += stepx[i];
+			at.y += stepy[i];
+		}
+	}
+}
+
+void board_search_knight(const Board* b, MoveArray* arr, Point from)
+{
+	for (int i = -2; i <= 2; ++i)
+	{
+		if (from.x + i >= BOARD_CELLS || from.x + i < 0) continue;
+		for (int j = -2; j <= 2; ++j)
+		{
+			if (abs(i) == abs(j) || i == 0 || j == 0) continue;
+			if (from.y + j >= BOARD_CELLS || from.y + j < 0) continue;
+			Point at = point_make(from.x + i, from.y + j);
+			Move m = move_make(from, at);
+			if (board_move_valid(b, m))
+				move_array_push(arr, m);
+		}
+	}
+}
+
+void board_search_bishop(const Board* b, MoveArray* arr, Point from)
+{
+	int stepx[4] = { -1, 1, -1, 1 };
+	int stepy[4] = { -1, -1, 1, 1 };
+	for (int i = 0; i < 4; ++i)
+	{
+		Point at = from;
+		at.x += stepx[i];
+		at.y += stepy[i];
+		while (at.x < BOARD_CELLS && at.x >= 0 &&
+			at.y < BOARD_CELLS && at.y >= 0)
+		{
+			Move m = move_make(from, at);
+			bool occupied = b->state[at.x][at.y] >= 0;
+			if (board_move_valid(b, m))
+				move_array_push(arr, m);
+			if (occupied) break;
+			at.x += stepx[i];
+			at.y += stepy[i];
+		}
+	}
+}
+
+void board_search_queen(const Board* b, MoveArray* arr, Point from)
+{
+	int rookStepx[4] = { -1, 1, 0, 0 };
+	int rookStepy[4] = { 0, 0, 1, -1 };
+
+	for (int i = 0; i < 4; ++i)
+	{
+		Point at = from;
+		at.x += rookStepx[i];
+		at.y += rookStepy[i];
+		while (at.x < BOARD_CELLS && at.x >= 0 &&
+			at.y < BOARD_CELLS && at.y >= 0)
+		{
+			Move m = move_make(from, at);
+			bool occupied = b->state[at.x][at.y] >= 0;
+			if (board_move_valid(b, m))
+				move_array_push(arr, m);
+			if (occupied) break;
+			at.x += rookStepx[i];
+			at.y += rookStepy[i];
+		}
+	}
+
+	int bishopStepx[4] = { -1, 1, -1, 1 };
+	int bishopStepy[4] = { -1, -1, 1, 1 };
+	for (int i = 0; i < 4; ++i)
+	{
+		Point at = from;
+		at.x += bishopStepx[i];
+		at.y += bishopStepy[i];
+		while (at.x < BOARD_CELLS && at.x >= 0 &&
+			at.y < BOARD_CELLS && at.y >= 0)
+		{
+			Move m = move_make(from, at);
+			bool occupied = b->state[at.x][at.y] >= 0;
+			if (board_move_valid(b, m))
+				move_array_push(arr, m);
+			if (occupied) break;
+			at.x += bishopStepx[i];
+			at.y += bishopStepy[i];
+		}
+	}
+}
+
+void board_search_king(const Board* b, MoveArray* arr, Point from)
+{
+	for (int i = -1; i <= 1; ++i)
+	{
+		if (from.x + i >= BOARD_CELLS || from.x + i < 0) continue;
+		for (int j = -1; j <= 1; ++j)
+		{
+			if (i == 0 && j == 0) continue;
+			Point to = point_make(from.x + i, from.y + j);
+			Move m = move_make(from, to);
+			if (to.y >= 0 && to.y < BOARD_CELLS && board_move_valid(b, m))
+				move_array_push(arr, m);
+		}
+	}
+	Point castleTargets[2] = { point_make(2, from.y), point_make(6, from.y) };
+	for (int i = 0; i < 2; i++) {
+		Move m = move_make(from, castleTargets[i]);
+		if (board_move_valid(b, m))
+			move_array_push(arr, m);
+	}
+}
+
 
 bool board_move_valid(const Board* b, Move move)
 {
@@ -197,7 +393,7 @@ bool board_move_valid(const Board* b, Move move)
 		break;
 	}
 
-	if (!board_can_capture(b, move)) return false;
+	if (!board_can_capture(b, move) && b->state[to.x][to.y] >= 0) return false;
 
 	if (get_piece_type(b->state[to.x][to.y]) != PIECE_KING)
 	{
@@ -401,12 +597,7 @@ bool board_blocked_bishop(const Board* b, Move move)
 
 bool board_can_capture(const Board* b, Move move)
 {
-	Point from = move.from;
-	Point to = move.to;
-	int capturePiece = b->state[to.x][to.y];
-	if (capturePiece < 0) return true;
-	if (get_piece_colour(capturePiece) == b->turn) return false;
-	return true;
+	return get_piece_colour(b->state[move.to.x][move.to.y]) != b->turn;
 }
 
 bool board_mouse_over(float x, float y)
@@ -423,13 +614,10 @@ Point board_mouse_coords(float x, float y)
 {
 	int i, j;
 
-	float xdiff = x - BOARD_OFFSET_X;
-	float ydiff = BOARD_CELLS - 1 - (int)(y - BOARD_OFFSET_Y) / CELL_SIZE;
-
 	i = (int)(x - BOARD_OFFSET_X) / CELL_SIZE;
 	j = BOARD_CELLS - 1 - (int)(y - BOARD_OFFSET_Y) / CELL_SIZE;
 
-	return (Point) { .x = i, .y = j };
+	return point_make(i, j);
 }
 
 bool board_select_valid(const Board* b, Point clicked)

@@ -8,6 +8,7 @@ typedef struct {
 } Point;
 
 Point point_invalid();
+Point point_make(int x, int y);
 
 typedef struct {
 	Point from, to;
@@ -21,5 +22,7 @@ typedef struct {
 } MoveArray;
 
 MoveArray move_array_init();
+void move_array_push(MoveArray* arr, Move move);
+MoveArray move_array_clear();
 
 #endif //MOVES_H__

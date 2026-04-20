@@ -41,5 +41,13 @@
 #define MAX_PATH_LENGTH		  48
 #define MAX_PIECE_NAME_LENGTH 16
 
+#define SEARCH_DEPTH		  5
+
+#define PAWN_VALUE			  100
+#define ROOK_VALUE			  500		
+#define KNIGHT_VALUE		  320
+#define BISHOP_VALUE		  330
+#define QUEEN_VALUE			  900
+
 
 #endif //CONFIG_H__

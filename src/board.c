@@ -207,7 +207,7 @@ void board_search_pawn(const Board* b, MoveArray* arr, Point from)
 	int captures[2] = { from.x - 1, from.x + 1 };
 	for (int i = 0; i < 2; ++i)
 	{
-		if (captures[i] < 0 || captures[i] > BOARD_CELLS) continue;
+		if (captures[i] < 0 || captures[i] >= BOARD_CELLS) continue;
 		Point cap = point_make(captures[i], from.y + step);
 		m = move_make(from, cap);
 		if (board_move_valid(b, m))

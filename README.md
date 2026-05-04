@@ -10,3 +10,5 @@ This is a work in progress, however almost all the features of chess are impleme
 At some point I will also implement move history and material tracking.
 
 The end goal of this project is to use my custom machine learning library to perform board evaluation or even to create a chess bot.
+
+Please note that this project continued from https://github.com/panu-hietanen/chess_v1 and therefore most of the development history is there.

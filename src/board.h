@@ -9,6 +9,15 @@
 
 typedef enum { MOVE_OK, MOVE_PROMOTE, MOVE_WHITE_IN_CHECK, MOVE_BLACK_IN_CHECK } MoveResult;
 
+typedef enum {
+	STATE_DEFAULT,
+	STATE_PIECE_MOVING,
+	STATE_PROMOTION_SELECTION,
+	STATE_WHITE_WON,
+	STATE_BLACK_WON,
+	STATE_STALEMATE
+} GameState;
+
 typedef struct {
 	bool kingSide;
 	bool queenSide;

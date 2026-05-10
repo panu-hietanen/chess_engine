@@ -1,164 +1,80 @@
-#include "raylib.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
-#include "config.h"
-#include "utils.h"
-#include "piece.h"
-#include "render.h"
 #include "board.h"
-#include "ui.h"
+#include "moves.h"
+#include "piece.h"
+#include "utils.h"
 
-int main() {
-	InitWindow(SCREEN_W, SCREEN_H, "Chess in C");
-
-	GameState gameState = STATE_DEFAULT;
-
-	PieceTextures pt;
-	piece_textures_load(&pt, PIECE_W, PIECE_H);
-
-	PieceTextures pt_promote;
-	piece_textures_load(&pt_promote, PROMOTE_W, PROMOTE_H);
-
+int main(void)
+{
 	Board b = board_init_game();
-	Point selectedPiece = point_invalid();
+	GameState state = STATE_DEFAULT;
 
-	SetTargetFPS(60);
-	while (!WindowShouldClose())
+	print_board(&b);
+
+	char line[16];
+	while (state == STATE_DEFAULT || state == STATE_PIECE_MOVING || state == STATE_PROMOTION_SELECTION)
 	{
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-		{
-			Vector2 mouseCoords = GetMousePosition();
-			float x = mouseCoords.x;
-			float y = mouseCoords.y;
-			switch (gameState)
-			{
-			case STATE_DEFAULT:
-				if (board_mouse_over(x, y))
-				{
-					Point newSelection = board_mouse_coords(x, y);
-					if (board_select_valid(&b, newSelection))
-					{
-						gameState = STATE_PIECE_MOVING;
-						selectedPiece = newSelection;
-					}
-					else
-					{
-						gameState = STATE_DEFAULT;
-						selectedPiece = point_invalid();
-					}
-				}
-				else if (restart_mouse_over(x, y, gameState))
-				{
-					game_restart(&b, &selectedPiece, &gameState);
-				}
-				break;
-			case STATE_PIECE_MOVING:
-				if (board_mouse_over(x, y))
-				{
-					Point newSelection = board_mouse_coords(x, y);
-					if (board_move_valid(&b, move_make(selectedPiece, newSelection)))
-					{
-						MoveResult moveResult = board_register_move(&b, move_make(selectedPiece, newSelection));
-						switch (moveResult)
-						{
-						case MOVE_OK:
-							board_next_turn(&b);
-							if (board_no_moves(&b, b.turn))
-							{
-								gameState = STATE_STALEMATE;
-							}
-							else
-							{
-								selectedPiece = point_invalid();
-								gameState = STATE_DEFAULT;
-							}
-							break;
-						case MOVE_WHITE_IN_CHECK:
-							if (board_no_moves(&b, PIECE_WHITE))
-							{
-								gameState = STATE_BLACK_WON;
-							}
-							else
-							{
-								board_next_turn(&b);
-								selectedPiece = point_invalid();
-								gameState = STATE_DEFAULT;
-							}
-							break;
-						case MOVE_BLACK_IN_CHECK:
-							if (board_no_moves(&b, PIECE_BLACK))
-							{
-								gameState = STATE_WHITE_WON;
-							}
-							else
-							{
-								board_next_turn(&b);
-								selectedPiece = point_invalid();
-								gameState = STATE_DEFAULT;
-							}
-							break;
-						case MOVE_PROMOTE:
-							gameState = STATE_PROMOTION_SELECTION;
-							selectedPiece = newSelection;
-							break;
-						}
-					}
-					else
-					{
-						if (board_select_valid(&b, newSelection))
-						{
-							gameState = STATE_PIECE_MOVING;
-							selectedPiece = newSelection;
-						}
-						else
-						{
-							gameState = STATE_DEFAULT;
-							selectedPiece = point_invalid();
-						}
-					}
-				}
-				else if (restart_mouse_over(x, y, gameState))
-				{
-					game_restart(&b, &selectedPiece, &gameState);
-				}
-				else
-				{
-					gameState = STATE_DEFAULT;
-					selectedPiece = point_invalid();
-				}
-				break;
-			case STATE_PROMOTION_SELECTION:
-				if (promote_mouse_over(x, y))
-				{
-					PieceType piece = promote_mouse_selection(x, y);
-					board_pawn_promote(&b, selectedPiece, piece);
-					board_next_turn(&b);
-					selectedPiece = point_invalid();
-					gameState = STATE_DEFAULT;
-				}
-				break;
-			case STATE_WHITE_WON:
-			case STATE_BLACK_WON:
-				if (restart_mouse_over(x, y, gameState))
-					game_restart(&b, &selectedPiece, &gameState);
-				break;
-			}
-		}
-		BeginDrawing();
-		{
-			ClearBackground(BACKGROUND_COLOUR);
-			board_draw();
-			board_state_draw(&b, &pt);
-			board_draw_highlight(&b, &pt, selectedPiece);
-			if (gameState == STATE_PIECE_MOVING) board_draw_moves(&b, selectedPiece);
-			ui_draw(&b, &pt_promote, gameState);
-		}
-		EndDrawing();
-	}
-	piece_textures_unload(&pt);
-	piece_textures_unload(&pt_promote);
+		printf("%s to move: ", b.turn == PIECE_WHITE ? "White" : "Black");
+		if (!fgets(line, sizeof(line), stdin)) break;
 
-	CloseWindow();
+		Point from, to;
+		if (strlen(line) < 5 || !parse_square(line, &from) || !parse_square(line + 3, &to))
+		{
+			printf("Enter move as 'e2 e4'\n");
+			continue;
+		}
+
+		Move m = move_make(from, to);
+		if (!board_move_valid(&b, m))
+		{
+			printf("Invalid move.\n");
+			continue;
+		}
+
+		MoveResult result = board_register_move(&b, m);
+		switch (result)
+		{
+		case MOVE_OK:
+			board_next_turn(&b);
+			if (board_no_moves(&b, b.turn))
+				state = STATE_STALEMATE;
+			break;
+		case MOVE_WHITE_IN_CHECK:
+			if (board_no_moves(&b, PIECE_WHITE)) state = STATE_BLACK_WON;
+			else board_next_turn(&b);
+			break;
+		case MOVE_BLACK_IN_CHECK:
+			if (board_no_moves(&b, PIECE_BLACK)) state = STATE_WHITE_WON;
+			else board_next_turn(&b);
+			break;
+		case MOVE_PROMOTE:
+			bool promoted = false;
+			PieceType promotion_piece;
+			while (!promoted)
+			{
+				printf("Enter piece to promote to (q/r/b/n): ");
+				if (!fgets(line, sizeof(line), stdin)) break;
+				if (strlen(line) < 1 || !parse_promote(line, &promotion_piece))
+				{
+					printf("Enter valid piece.\n");
+					continue;
+				}
+				promoted = true;
+			}
+			board_pawn_promote(&b, to, promotion_piece);
+			board_next_turn(&b);
+			break;
+		}
+
+		print_board(&b);
+	}
+
+	if (state == STATE_WHITE_WON) printf("White wins by checkmate!\n");
+	else if (state == STATE_BLACK_WON) printf("Black wins by checkmate!\n");
+	else if (state == STATE_STALEMATE) printf("Stalemate!\n");
+
 	return 0;
 }

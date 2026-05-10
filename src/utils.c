@@ -61,3 +61,56 @@ void game_restart(Board* b, Point* selected, GameState* state)
 	*selected = point_invalid();
 	*state = STATE_DEFAULT;
 }
+
+void print_board(const Board* b)
+{
+	static const char symbols[] = "PRNBQK";
+	for (int y = BOARD_CELLS - 1; y >= 0; --y)
+	{
+		printf("%d ", y + 1);
+		for (int x = 0; x < BOARD_CELLS; ++x)
+		{
+			int p = b->state[x][y];
+			if (p < 0) { printf(". "); continue; }
+			char sym = symbols[get_piece_type(p)];
+			if (get_piece_colour(p) == PIECE_BLACK) sym += 32;
+			printf("%c ", sym);
+		}
+		printf("\n");
+	}
+	printf("  a b c d e f g h\n\n");
+}
+
+bool parse_square(const char* s, Point* p)
+{
+	if (s[0] < 'a' || s[0] > 'h') return false;
+	if (s[1] < '1' || s[1] > '8') return false;
+	p->x = s[0] - 'a';
+	p->y = s[1] - '1';
+	return true;
+}
+
+bool parse_promote(const char *s, PieceType* piece)
+{
+	char p = s[0];
+	switch (p)
+	{
+	case 'q':
+	case 'Q':
+		*piece = PIECE_QUEEN;
+		return true;
+	case 'r':
+	case 'R':
+		*piece = PIECE_ROOK;
+		return true;
+	case 'n':
+	case 'N':
+		*piece = PIECE_KNIGHT;
+		return true;
+	case 'b':
+	case 'B':
+		*piece = PIECE_BISHOP;
+		return true;
+	}
+    return false;
+}

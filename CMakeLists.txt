@@ -18,6 +18,13 @@ target_include_directories(chess_engine PRIVATE src)
 
 if (MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(chess_engine PRIVATE /fsanitize=address)
+elseif(NOT MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(chess_engine PRIVATE -fsanitize=address)
+    target_link_options(chess_engine PUBLIC -fsanitize=address)
+endif()
+
+if (UNIX)
+    target_link_libraries(chess_engine PUBLIC m)
 endif()
 
 include(FetchContent)

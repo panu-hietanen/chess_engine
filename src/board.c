@@ -3,6 +3,7 @@
 
 #include "board.h"
 #include "utils.h"
+#include "engine.h"
 
 Board board_init()
 {

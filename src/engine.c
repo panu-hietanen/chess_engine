@@ -12,7 +12,7 @@ void engine_search(const Board* b, MoveArray* arr)
 			if (piece < 0) continue;
 			if (get_piece_colour(piece) != b->turn) continue;
 
-			Point from = (Point){ .x = i, .y = j };
+			Point from = point_make(i, j);
 			switch (get_piece_type(piece))
 			{
 			case PIECE_PAWN:
@@ -53,7 +53,7 @@ int board_evaluate(const Board* b)
 			}
 			else
 			{
-				sum = piece_value(get_piece_type(piece));
+				sum -= piece_value(get_piece_type(piece));
 			}
 		}
 	}

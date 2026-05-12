@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include "utils.h"
+
 void engine_search(const Board* b, MoveArray* arr)
 {
 	for (int i = 0; i < BOARD_CELLS; ++i)
@@ -45,13 +47,13 @@ int board_evaluate(const Board* b)
 		{
 			int piece = b->state[i][j];
 			if (piece < 0) continue;
-			if (piece_get_colour(piece) == PIECE_WHITE)
+			if (get_piece_colour(piece) == PIECE_WHITE)
 			{
-				sum += piece_value(board_get_type(piece));
+				sum += piece_value(get_piece_type(piece));
 			}
 			else
 			{
-				sum = piece_value(board_get_type(piece));
+				sum = piece_value(get_piece_type(piece));
 			}
 		}
 	}

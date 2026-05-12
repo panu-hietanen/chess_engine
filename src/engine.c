@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include "utils.h"
+
 void engine_search(const Board* b, MoveArray* arr)
 {
 	for (int i = 0; i < BOARD_CELLS; ++i)
@@ -10,7 +12,7 @@ void engine_search(const Board* b, MoveArray* arr)
 			if (piece < 0) continue;
 			if (get_piece_colour(piece) != b->turn) continue;
 
-			Point from = (Point){ .x = i, .y = j };
+			Point from = point_make(i, j);
 			switch (get_piece_type(piece))
 			{
 			case PIECE_PAWN:
@@ -45,13 +47,13 @@ int board_evaluate(const Board* b)
 		{
 			int piece = b->state[i][j];
 			if (piece < 0) continue;
-			if (piece_get_colour(piece) == PIECE_WHITE)
+			if (get_piece_colour(piece) == PIECE_WHITE)
 			{
-				sum += piece_value(board_get_type(piece));
+				sum += piece_value(get_piece_type(piece));
 			}
 			else
 			{
-				sum = piece_value(board_get_type(piece));
+				sum -= piece_value(get_piece_type(piece));
 			}
 		}
 	}

@@ -8,6 +8,7 @@
 #include "render.h"
 #include "board.h"
 #include "ui.h"
+#include "engine.h"
 
 int main() {
 	InitWindow(SCREEN_W, SCREEN_H, "Chess in C");
@@ -21,7 +22,9 @@ int main() {
 	piece_textures_load(&pt_promote, PROMOTE_W, PROMOTE_H);
 
 	Board b = board_init_game();
-	Point selectedPiece = point_invalid();
+	GameState state = STATE_DEFAULT;
+	Engine* engine = engine_create(WEIGHTS_PATH);
+		Point selectedPiece = point_invalid();
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose())

@@ -12,5 +12,7 @@ PieceType get_piece_type(int p);
 int get_piece_id(PieceType type, PieceColour colour);
 
 void game_restart(Board* b, Point* selected, GameState* state);
+bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_LAYERS], int *count);
+
 
 #endif //UTILS_H__

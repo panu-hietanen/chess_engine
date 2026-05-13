@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "utils.h"
 
@@ -60,4 +61,53 @@ void game_restart(Board* b, Point* selected, GameState* state)
 	*b = board_init_game();
 	*selected = point_invalid();
 	*state = STATE_DEFAULT;
+}
+
+bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_LAYERS], int *count)
+{
+    FILE* fptr = fopen(path, "r");
+    if (!fptr) return false;
+
+    int used = 0;
+    for (;;)
+    {
+        int ndim;
+        int rc = fscanf(fptr, " %d,", &ndim);
+        if (rc == EOF) break;
+        if (rc != 1 || ndim <= 0 || ndim > 2 || used >= MAX_LAYERS) goto error;
+
+        int elements = 1;
+		int* curr_shape = malloc(sizeof(int) * 2);
+        for (int i = 0; i < ndim; ++i)
+        {
+            int dim = 0;
+            if (fscanf(fptr, "%d,", &dim) != 1 || dim <= 0) goto error;
+            elements *= dim;
+			if (shape != NULL)
+			{
+				curr_shape[i] = dim;
+			}
+		}
+
+        float *layer = malloc((size_t)elements * sizeof(float));
+        if (!layer) goto error;
+
+        for (int i = 0; i < elements; ++i)
+        {
+            const char *fmt = (i + 1 < elements) ? "%f," : "%f";
+            if (fscanf(fptr, fmt, &layer[i]) != 1) { free(layer); goto error; }
+        }
+
+		shape[used] = curr_shape;
+        weights[used++] = layer;
+    }
+
+    fclose(fptr);
+	if (count != NULL) *count = used;
+	return true;
+
+error:
+    for (int i = 0; i < used; ++i) free(weights[i]);
+    fclose(fptr);
+    return false;
 }

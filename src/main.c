@@ -71,8 +71,13 @@ int main(void)
 			board_next_turn(&b);
 			break;
 		}
-
+		
+		float features[FEATURES];
+		board_to_features(&b, features);
+		float y = engine_forward(engine, features);
+		y = (y - 0.5f) * 200.0f;
 		print_board(&b);
+		printf("Estimated score: %f\n", y);
 	}
 
 	if (state == STATE_WHITE_WON) printf("White wins by checkmate!\n");

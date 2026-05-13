@@ -69,6 +69,7 @@ bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_L
     if (!fptr) return false;
 
     int used = 0;
+    int* curr_shape = NULL;
     for (;;)
     {
         int ndim;
@@ -77,7 +78,7 @@ bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_L
         if (rc != 1 || ndim <= 0 || ndim > 2 || used >= MAX_LAYERS) goto error;
 
         int elements = 1;
-		int* curr_shape = malloc(sizeof(int) * 2);
+        curr_shape = malloc(sizeof(int) * 2);
         for (int i = 0; i < ndim; ++i)
         {
             int dim = 0;
@@ -98,8 +99,15 @@ bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_L
             if (fscanf(fptr, fmt, &layer[i]) != 1) { free(layer); goto error; }
         }
 
-		shape[used] = curr_shape;
-        weights[used++] = layer;
+		if (shape != NULL)
+		{
+			shape[used] = curr_shape;
+		}
+		else
+		{
+			free(curr_shape);
+		}
+		weights[used++] = layer;
     }
 
     fclose(fptr);
@@ -107,7 +115,12 @@ bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_L
 	return true;
 
 error:
-    for (int i = 0; i < used; ++i) free(weights[i]);
+    free(curr_shape);
+    for (int i = 0; i < used; ++i)
+    {
+        free(weights[i]); weights[i] = NULL;
+        if (shape != NULL) { free(shape[i]); shape[i] = NULL; }
+    }
     fclose(fptr);
     return false;
 }

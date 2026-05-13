@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include "engine.h"
 
@@ -8,18 +9,12 @@
 
 Engine* engine_create(const char* path)
 {
-	Engine* engine = malloc(sizeof(Engine));
+	Engine* engine = calloc(1, sizeof(Engine));
 	
 	char ws[256];
-	char ms[256];
-	char vs[256];
 	sprintf(ws, "%s%s", path, ".csv");
-	sprintf(ms, "%s%s", path, "_m.csv");
-	sprintf(vs, "%s%s", path, "_v.csv");
 
     if (!load_weights(ws, engine->ws, engine->shapes, &engine->n)) { engine_destroy(engine); return NULL; }
-    if (!load_weights(ms, engine->ms, NULL, NULL)) { engine_destroy(engine); return NULL; }
-    if (!load_weights(vs, engine->vs, NULL, NULL)) { engine_destroy(engine); return NULL; }
 
 	return engine;
 }
@@ -30,8 +25,6 @@ void engine_destroy(Engine *engine)
     for (int i = 0; i < MAX_LAYERS; ++i)
     {
         free(engine->ws[i]);
-        free(engine->ms[i]);
-        free(engine->vs[i]);
 		free(engine->shapes[i]);
     }
     free(engine);
@@ -97,6 +90,7 @@ int board_evaluate(const Board* b)
 
 void board_to_features(const Board *b, float* features)
 {
+	for (int i = 0; i < FEATURES; ++i) features[i] = 0.0f;
 	for (int i = 0; i < BOARD_CELLS; ++i)
 	{
 		for (int j = 0; j < BOARD_CELLS; ++j)
@@ -104,6 +98,7 @@ void board_to_features(const Board *b, float* features)
 			int piece = b->state[i][j];
 			if (piece < 0) continue;
 			int feature_idx = piece * 64 + (i + j * 8);
+			features[feature_idx] = 1.0f;
 		}
 	}
 	int base = PIECE_FEATURES;
@@ -112,15 +107,69 @@ void board_to_features(const Board *b, float* features)
 	features[base + 2] = (b->canCastleWhite.queenSide) ? 1.0f : 0.0f;
 	features[base + 3] = (b->canCastleBlack.kingSide) ? 1.0f : 0.0f;
 	features[base + 4] = (b->canCastleBlack.queenSide) ? 1.0f : 0.0f;
-	if (b->enPassantPawn.x > 0 && b->enPassantPawn.y > 0)
+	if (b->enPassantPawn.x >= 0 && b->enPassantPawn.y >= 0)
 	{
-		features[base + b->enPassantPawn.x] = 1.0f;
+		features[base + 5 + b->enPassantPawn.x] = 1.0f;
 	}
 }
 
 float engine_forward(const Engine *engine, float *features)
 {
-	return 0.0f;
+    if (!engine || !features || engine->n < 2) return 0.0f;
+
+    float *prev = features;
+    int prev_dim = FEATURES;
+    bool owns_prev = false;
+
+    for (int t = 0; t + 1 < engine->n; t += 2)
+    {
+        float *W = engine->ws[t];
+        float *B = engine->ws[t + 1];
+
+        if (!W || !B || !engine->shapes[t] || !engine->shapes[t + 1])
+        {
+            if (owns_prev) free(prev);
+            return 0.0f;
+        }
+
+        int in_dim  = engine->shapes[t][0];
+        int out_dim = engine->shapes[t][1];
+
+        if (in_dim != prev_dim || out_dim <= 0)
+        {
+            if (owns_prev) free(prev);
+            return 0.0f;
+        }
+
+        float *curr = malloc((size_t)out_dim * sizeof(float));
+        if (!curr)
+        {
+            if (owns_prev) free(prev);
+            return 0.0f;
+        }
+
+        for (int o = 0; o < out_dim; ++o)
+        {
+            float sum = B[o];
+            for (int i = 0; i < in_dim; ++i)
+            {
+                sum += prev[i] * W[i * out_dim + o];
+            }
+
+            bool is_last_pair = (t + 2 >= engine->n);
+            curr[o] = (is_last_pair || sum > 0.0f) ? sum : 0.0f;
+        }
+
+        if (owns_prev) free(prev);
+        prev = curr;
+        prev_dim = out_dim;
+        owns_prev = true;
+    }
+
+    float y = (prev_dim > 0) ? prev[0] : 0.0f;
+    if (owns_prev) free(prev);
+
+    return 1.0f / (1.0f + expf(-y));
 }
 
 int piece_value(PieceType piece)

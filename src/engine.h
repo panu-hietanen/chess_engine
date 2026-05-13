@@ -8,8 +8,6 @@
 
 typedef struct {
 	float* ws[MAX_LAYERS];
-	float* ms[MAX_LAYERS];
-	float* vs[MAX_LAYERS];
     int* shapes[MAX_LAYERS];
 	int n;
 } Engine;

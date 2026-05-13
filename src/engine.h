@@ -20,6 +20,8 @@ void engine_destroy(Engine* engine);
 void engine_search(const Board* b, MoveArray* arr);
 
 int board_evaluate(const Board* b);
+void board_to_features(const Board* b, float* features);
+float engine_forward(const Engine* engine, float* features);
 
 int piece_value(PieceType piece);
 

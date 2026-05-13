@@ -6,11 +6,14 @@
 #include "moves.h"
 #include "piece.h"
 #include "utils.h"
+#include "engine.h"
 
 int main(void)
 {
 	Board b = board_init_game();
 	GameState state = STATE_DEFAULT;
+
+	Engine* engine = engine_create(WEIGHTS_PATH);
 
 	print_board(&b);
 
@@ -76,5 +79,6 @@ int main(void)
 	else if (state == STATE_BLACK_WON) printf("Black wins by checkmate!\n");
 	else if (state == STATE_STALEMATE) printf("Stalemate!\n");
 
+	engine_destroy(engine);
 	return 0;
 }

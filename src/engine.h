@@ -4,6 +4,18 @@
 #include "board.h"
 #include "moves.h"
 #include "piece.h"
+#include "config.h"
+
+typedef struct {
+	float* ws[MAX_LAYERS];
+	float* ms[MAX_LAYERS];
+	float* vs[MAX_LAYERS];
+    int* shapes[MAX_LAYERS];
+	int n;
+} Engine;
+
+Engine* engine_create(const char* path);
+void engine_destroy(Engine* engine);
 
 void engine_search(const Board* b, MoveArray* arr);
 

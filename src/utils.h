@@ -16,4 +16,6 @@ void print_board(const Board* b);
 bool parse_square(const char* s, Point* p);
 bool parse_promote(const char* s, PieceType* piece);
 
+bool load_weights(const char *path, float *weights[MAX_LAYERS], int *shape[MAX_LAYERS], int *count);
+
 #endif //UTILS_H__

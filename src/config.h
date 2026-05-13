@@ -49,5 +49,8 @@
 #define BISHOP_VALUE		  330
 #define QUEEN_VALUE			  900
 
+#define MAX_LAYERS            16
+#define WEIGHTS_PATH          "../../../resources/weights/chess_weights"
+
 
 #endif //CONFIG_H__

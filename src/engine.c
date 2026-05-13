@@ -4,6 +4,7 @@
 #include "engine.h"
 
 #include "utils.h"
+#include "board.h"
 
 Engine* engine_create(const char* path)
 {
@@ -92,6 +93,34 @@ int board_evaluate(const Board* b)
 		}
 	}
 	return sum;
+}
+
+void board_to_features(const Board *b, float* features)
+{
+	for (int i = 0; i < BOARD_CELLS; ++i)
+	{
+		for (int j = 0; j < BOARD_CELLS; ++j)
+		{
+			int piece = b->state[i][j];
+			if (piece < 0) continue;
+			int feature_idx = piece * 64 + (i + j * 8);
+		}
+	}
+	int base = PIECE_FEATURES;
+	features[base] = (b->turn == PIECE_WHITE) ? 1.0f : 0.0f;
+	features[base + 1] = (b->canCastleWhite.kingSide) ? 1.0f : 0.0f;
+	features[base + 2] = (b->canCastleWhite.queenSide) ? 1.0f : 0.0f;
+	features[base + 3] = (b->canCastleBlack.kingSide) ? 1.0f : 0.0f;
+	features[base + 4] = (b->canCastleBlack.queenSide) ? 1.0f : 0.0f;
+	if (b->enPassantPawn.x > 0 && b->enPassantPawn.y > 0)
+	{
+		features[base + b->enPassantPawn.x] = 1.0f;
+	}
+}
+
+float engine_forward(const Engine *engine, float *features)
+{
+	return 0.0f;
 }
 
 int piece_value(PieceType piece)

@@ -51,6 +51,9 @@
 
 #define MAX_LAYERS            16
 #define WEIGHTS_PATH          "../../../resources/weights/chess_weights"
+#define PIECE_FEATURES        768
+#define STATE_FEATURES        13
+#define FEATURES              (PIECE_FEATURES + STATE_FEATURES)
 
 
 #endif //CONFIG_H__

@@ -200,63 +200,55 @@ void board_to_features(const Board *b, float* features)
 	}
 }
 
-float engine_forward(const Engine *engine, float *features)
+float engine_forward(const Engine * restrict engine, const float * restrict features)
 {
     if (!engine || !features || engine->n < 2) return 0.0f;
 
-    float *prev = features;
+    float buf0[FEATURES];
+    float buf1[FEATURES];
+    const float *prev = features;
+    float *curr = buf0;
+    bool on_buf0 = true;
     int prev_dim = FEATURES;
-    bool owns_prev = false;
 
     for (int t = 0; t + 1 < engine->n; t += 2)
     {
-        float *W = engine->ws[t];
-        float *B = engine->ws[t + 1];
+        const float * restrict W = engine->ws[t];
+        const float * restrict B = engine->ws[t + 1];
 
         if (!W || !B || !engine->shapes[t] || !engine->shapes[t + 1])
-        {
-            if (owns_prev) free(prev);
             return 0.0f;
-        }
 
         int in_dim  = engine->shapes[t][0];
         int out_dim = engine->shapes[t][1];
 
-        if (in_dim != prev_dim || out_dim <= 0)
-        {
-            if (owns_prev) free(prev);
+        if (in_dim != prev_dim || out_dim <= 0 || out_dim > FEATURES)
             return 0.0f;
-        }
 
-        float *curr = malloc((size_t)out_dim * sizeof(float));
-        if (!curr)
-        {
-            if (owns_prev) free(prev);
-            return 0.0f;
-        }
+        bool is_last_pair = (t + 2 >= engine->n);
 
         for (int o = 0; o < out_dim; ++o)
-        {
-            float sum = B[o];
-            for (int i = 0; i < in_dim; ++i)
-            {
-                sum += prev[i] * W[i * out_dim + o];
-            }
+            curr[o] = B[o];
 
-            bool is_last_pair = (t + 2 >= engine->n);
-            curr[o] = (is_last_pair || sum > 0.0f) ? sum : 0.0f;
+        for (int i = 0; i < in_dim; ++i)
+        {
+            float p = prev[i];
+            const float * restrict Wrow = W + i * out_dim;
+            for (int o = 0; o < out_dim; ++o)
+                curr[o] += p * Wrow[o];
         }
 
-        if (owns_prev) free(prev);
+        if (!is_last_pair)
+            for (int o = 0; o < out_dim; ++o)
+                if (curr[o] < 0.0f) curr[o] = 0.0f;
+
         prev = curr;
         prev_dim = out_dim;
-        owns_prev = true;
+        curr = on_buf0 ? buf1 : buf0;
+        on_buf0 = !on_buf0;
     }
 
-    float y = (prev_dim > 0) ? prev[0] : 0.0f;
-    if (owns_prev) free(prev);
-
-    return y;
+    return 1.0f / (1.0f + expf(-prev[0]));
 }
 
 int piece_value(PieceType piece)

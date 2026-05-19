@@ -20,7 +20,7 @@ Move engine_best_move(const Engine* engine, const Board* b);
 
 float board_evaluate(const Engine* engine, const Board* b);
 void board_to_features(const Board* b, float* features);
-float engine_forward(const Engine* engine, float* features);
+float engine_forward(const Engine* restrict engine, const float* restrict features);
 
 int piece_value(PieceType piece);
 

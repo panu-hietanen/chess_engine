@@ -70,8 +70,20 @@ void engine_search(const Board* b, MoveArray* arr)
 
 Move engine_best_move(const Engine *engine, const Board *b)
 {
+	MoveArray unsorted = move_array_init();
+	engine_search(b, &unsorted);
+
 	MoveArray arr = move_array_init();
-	engine_search(b, &arr);
+	for (int i = 0; i < unsorted.len; ++i)
+	{
+		if (b->state[unsorted.data[i].to.x][unsorted.data[i].to.y] >= 0) 
+			move_array_push(&arr, unsorted.data[i]);
+	}
+	for (int i = 0; i < unsorted.len; ++i)
+	{
+		if (b->state[unsorted.data[i].to.x][unsorted.data[i].to.y] < 0)
+			move_array_push(&arr, unsorted.data[i]);
+	}
 
 	Move bestMove;
 	float bestScore = (b->turn == PIECE_WHITE) ? -1.0f : 2.0f;
@@ -104,8 +116,21 @@ Move engine_best_move(const Engine *engine, const Board *b)
 
 static float minimax(const Engine *engine, const Board *b, int depth, float alpha, float beta)
 {
+	MoveArray unsorted = move_array_init();
+	engine_search(b, &unsorted);
+
 	MoveArray arr = move_array_init();
-	engine_search(b, &arr);
+	for (int i = 0; i < unsorted.len; ++i)
+	{
+		if (b->state[unsorted.data[i].to.x][unsorted.data[i].to.y] >= 0) 
+			move_array_push(&arr, unsorted.data[i]);
+	}
+	for (int i = 0; i < unsorted.len; ++i)
+	{
+		if (b->state[unsorted.data[i].to.x][unsorted.data[i].to.y] < 0)
+			move_array_push(&arr, unsorted.data[i]);
+	}
+
 
 	if (arr.len == 0) 
 	{

@@ -148,6 +148,17 @@ int main() {
 				break;
 			}
 		}
+		
+		BeginDrawing();
+		{
+			ClearBackground(BACKGROUND_COLOUR);
+			board_draw();
+			board_state_draw(&b, &pt);
+			board_draw_highlight(&b, &pt, selectedPiece);
+			if (gameState == STATE_PIECE_MOVING) board_draw_moves(&b, selectedPiece);
+			ui_draw(&b, &pt_promote, gameState);
+		}
+		EndDrawing();
 		if (gameState == STATE_DEFAULT && b.turn == PIECE_BLACK)
 		{
 			Move em = engine_best_move(engine, &b);
@@ -160,17 +171,6 @@ int main() {
 				gameState = board_in_check(&b, king) ? STATE_BLACK_WON : STATE_STALEMATE;
 			}
 		}
-
-		BeginDrawing();
-		{
-			ClearBackground(BACKGROUND_COLOUR);
-			board_draw();
-			board_state_draw(&b, &pt);
-			board_draw_highlight(&b, &pt, selectedPiece);
-			if (gameState == STATE_PIECE_MOVING) board_draw_moves(&b, selectedPiece);
-			ui_draw(&b, &pt_promote, gameState);
-		}
-		EndDrawing();
 	}
 	piece_textures_unload(&pt);
 	piece_textures_unload(&pt_promote);

@@ -41,10 +41,10 @@
 #define PROMOTE_OFFSET_Y	  (BOARD_OFFSET_Y)
 
 #define RESOURCES_PATH		  "C:/Dev/C/chess_engine/resources/"
-#define MAX_PATH_LENGTH		  48
+#define MAX_PATH_LENGTH		  64
 #define MAX_PIECE_NAME_LENGTH 16
 
-#define SEARCH_DEPTH		  3
+#define SEARCH_DEPTH		  5
 
 #define PAWN_VALUE			  100
 #define ROOK_VALUE			  500		

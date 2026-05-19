@@ -44,7 +44,7 @@
 #define MAX_PATH_LENGTH		  48
 #define MAX_PIECE_NAME_LENGTH 16
 
-#define SEARCH_DEPTH		  2
+#define SEARCH_DEPTH		  3
 
 #define PAWN_VALUE			  100
 #define ROOK_VALUE			  500		

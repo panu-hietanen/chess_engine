@@ -1,6 +1,9 @@
 #ifndef CONFIG_H__
 #define CONFIG_H__
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 #define CELL_SIZE             80
 #define BOARD_CELLS			  8
 #define BOARD_PX		      (CELL_SIZE * BOARD_CELLS)
@@ -41,7 +44,7 @@
 #define MAX_PATH_LENGTH		  48
 #define MAX_PIECE_NAME_LENGTH 16
 
-#define SEARCH_DEPTH		  5
+#define SEARCH_DEPTH		  2
 
 #define PAWN_VALUE			  100
 #define ROOK_VALUE			  500		
@@ -50,7 +53,7 @@
 #define QUEEN_VALUE			  900
 
 #define MAX_LAYERS            16
-#define WEIGHTS_PATH          "../../../resources/weights/chess_weights"
+#define WEIGHTS_PATH          "/home/phietanen/dev/chess_engine/resources/weights/chess_weights_soft_6"
 #define PIECE_FEATURES        768
 #define STATE_FEATURES        13
 #define FEATURES              (PIECE_FEATURES + STATE_FEATURES)

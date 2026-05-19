@@ -21,22 +21,38 @@ int main(void)
 	while (state == STATE_DEFAULT || state == STATE_PIECE_MOVING || state == STATE_PROMOTION_SELECTION)
 	{
 		printf("%s to move: ", b.turn == PIECE_WHITE ? "White" : "Black");
-		if (!fgets(line, sizeof(line), stdin)) break;
-
+		Move m;
 		Point from, to;
-		if (strlen(line) < 5 || !parse_square(line, &from) || !parse_square(line + 3, &to))
+		if (b.turn == PIECE_WHITE)
 		{
-			printf("Enter move as 'e2 e4'\n");
-			continue;
-		}
+			if (!fgets(line, sizeof(line), stdin))
+				break;
 
-		Move m = move_make(from, to);
-		if (!board_move_valid(&b, m))
+			if (strlen(line) < 5 || !parse_square(line, &from) || !parse_square(line + 3, &to))
+			{
+				printf("Enter move as 'e2 e4'\n");
+				continue;
+			}
+
+			m = move_make(from, to);
+			if (!board_move_valid(&b, m))
+			{
+				printf("Invalid move.\n");
+				continue;
+			}
+
+		}
+		else
 		{
-			printf("Invalid move.\n");
-			continue;
+			m = engine_best_move(engine, &b);
+			char from_char = 'a' + m.from.x;
+			char to_char = 'a' + m.to.x;
+			printf(
+				"Black played %c%d to %c%d\n", 
+				from_char, m.from.y, to_char, m.to.y
+			);
 		}
-
+		
 		MoveResult result = board_register_move(&b, m);
 		switch (result)
 		{
@@ -46,38 +62,50 @@ int main(void)
 				state = STATE_STALEMATE;
 			break;
 		case MOVE_WHITE_IN_CHECK:
-			if (board_no_moves(&b, PIECE_WHITE)) state = STATE_BLACK_WON;
-			else board_next_turn(&b);
+			if (board_no_moves(&b, PIECE_WHITE))
+				state = STATE_BLACK_WON;
+			else
+				board_next_turn(&b);
 			break;
 		case MOVE_BLACK_IN_CHECK:
-			if (board_no_moves(&b, PIECE_BLACK)) state = STATE_WHITE_WON;
-			else board_next_turn(&b);
+			if (board_no_moves(&b, PIECE_BLACK))
+				state = STATE_WHITE_WON;
+			else
+				board_next_turn(&b);
 			break;
 		case MOVE_PROMOTE:
 			bool promoted = false;
 			PieceType promotion_piece;
-			while (!promoted)
+			if (b.turn == PIECE_WHITE)
 			{
-				printf("Enter piece to promote to (q/r/b/n): ");
-				if (!fgets(line, sizeof(line), stdin)) break;
-				if (strlen(line) < 1 || !parse_promote(line, &promotion_piece))
+				while (!promoted)
 				{
-					printf("Enter valid piece.\n");
-					continue;
+					printf("Enter piece to promote to (q/r/b/n): ");
+					if (!fgets(line, sizeof(line), stdin))
+						break;
+					if (strlen(line) < 1 || !parse_promote(line, &promotion_piece))
+					{
+						printf("Enter valid piece.\n");
+						continue;
+					}
+					promoted = true;
 				}
-				promoted = true;
+				board_pawn_promote(&b, to, promotion_piece);
 			}
-			board_pawn_promote(&b, to, promotion_piece);
+			else
+			{
+				promotion_piece = PIECE_QUEEN;
+				board_pawn_promote(&b, m.to, promotion_piece);
+			}
 			board_next_turn(&b);
 			break;
 		}
-		
-		float features[FEATURES];
-		board_to_features(&b, features);
-		float y = engine_forward(engine, features);
-		y = (y - 0.5f) * 200.0f;
+		// float features[FEATURES];
+		// board_to_features(&b, features);
+		// float y = engine_forward(engine, features);
+		// y = (y - 0.5f) * 200.0f;
+		// printf("Estimated score: %f\n", y);
 		print_board(&b);
-		printf("Estimated score: %f\n", y);
 	}
 
 	if (state == STATE_WHITE_WON) printf("White wins by checkmate!\n");

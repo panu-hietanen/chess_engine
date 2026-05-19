@@ -39,8 +39,6 @@ void board_next_turn(Board* b);
 void board_pawn_promote(Board* b, Point from, PieceType type);
 Point board_find_king(const Board* b, PieceColour colour);
 
-int board_evaluate(const Board* b);
-
 void board_search_pawn(const Board* b, MoveArray* arr, Point from);
 void board_search_rook(const Board* b, MoveArray* arr, Point from);
 void board_search_knight(const Board* b, MoveArray* arr, Point from);

@@ -7,6 +7,8 @@
 #include "utils.h"
 #include "board.h"
 
+static float minimax(const Engine* engine, const Board* b, int depth, float alpha, float beta);
+
 Engine* engine_create(const char* path)
 {
 	Engine* engine = calloc(1, sizeof(Engine));
@@ -66,26 +68,91 @@ void engine_search(const Board* b, MoveArray* arr)
 	}
 }
 
-int board_evaluate(const Board* b)
+Move engine_best_move(const Engine *engine, const Board *b)
 {
-	int sum = 0;
-	for (int i = 0; i < BOARD_CELLS; ++i)
+	MoveArray arr = move_array_init();
+	engine_search(b, &arr);
+
+	Move bestMove;
+	float bestScore = (b->turn == PIECE_WHITE) ? -1.0f : 2.0f;
+	for (int i = 0; i < arr.len; ++i)
 	{
-		for (int j = 0; j < BOARD_CELLS; ++j)
+		Board moved = *b;
+		MoveResult result = board_register_move(&moved, arr.data[i]);
+		if (result == MOVE_PROMOTE) board_pawn_promote (&moved, arr.data[i].to, PIECE_QUEEN); // TODO: Promotion logic
+		board_next_turn(&moved);
+		float curr = minimax(engine, &moved, SEARCH_DEPTH - 1, 0.0f, 1.0f);
+		if (b->turn == PIECE_WHITE)
 		{
-			int piece = b->state[i][j];
-			if (piece < 0) continue;
-			if (get_piece_colour(piece) == PIECE_WHITE)
+			if (curr > bestScore)
 			{
-				sum += piece_value(get_piece_type(piece));
+				bestScore = curr;
+				bestMove = arr.data[i];
 			}
-			else
+		}
+		else
+		{
+			if (curr < bestScore)
 			{
-				sum -= piece_value(get_piece_type(piece));
+				bestScore = curr;
+				bestMove = arr.data[i];
 			}
 		}
 	}
-	return sum;
+	return bestMove;
+}
+
+static float minimax(const Engine *engine, const Board *b, int depth, float alpha, float beta)
+{
+	MoveArray arr = move_array_init();
+	engine_search(b, &arr);
+
+	if (arr.len == 0) 
+	{
+		Point king = board_find_king(b, b->turn);
+		if (board_in_check(b, king))
+		{
+			return (b->turn == PIECE_WHITE) ? 0.0f : 1.0f;
+		}
+		return 0.5f;
+	}
+
+	float score = (b->turn == PIECE_WHITE) ? -1.0f : 2.0f;
+	for (int i = 0; i < arr.len; ++i)
+	{
+		Board moved = *b;
+		MoveResult result = board_register_move(&moved, arr.data[i]);
+		if (result == MOVE_PROMOTE) board_pawn_promote (&moved, arr.data[i].to, PIECE_QUEEN); // TODO: Promotion logic
+		board_next_turn(&moved);
+		float curr;
+		if (depth > 0)
+		{
+			curr = minimax(engine, &moved, depth - 1, alpha, beta);
+		}
+		else
+		{
+			curr = board_evaluate(engine, &moved);
+		}
+		if (b->turn == PIECE_WHITE)
+		{
+			score = MAX(score, curr);
+			if (score > alpha) alpha = score;
+		}
+		else
+		{
+			score = MIN(score, curr);
+			if (score < beta) beta = score;
+		}
+		if (alpha >= beta) break;
+	}
+	return score;
+}
+
+float board_evaluate(const Engine* engine, const Board* b)
+{
+	float features[FEATURES];
+	board_to_features(b, features);
+	return engine_forward(engine, features);
 }
 
 void board_to_features(const Board *b, float* features)
@@ -169,7 +236,7 @@ float engine_forward(const Engine *engine, float *features)
     float y = (prev_dim > 0) ? prev[0] : 0.0f;
     if (owns_prev) free(prev);
 
-    return 1.0f / (1.0f + expf(-y));
+    return y;
 }
 
 int piece_value(PieceType piece)

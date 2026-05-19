@@ -116,6 +116,8 @@ Move engine_best_move(const Engine *engine, const Board *b)
 
 static float minimax(const Engine *engine, const Board *b, int depth, float alpha, float beta)
 {
+	if (depth == 0) return board_evaluate(engine, b);
+
 	MoveArray unsorted = move_array_init();
 	engine_search(b, &unsorted);
 
@@ -150,14 +152,7 @@ static float minimax(const Engine *engine, const Board *b, int depth, float alph
 		if (result == MOVE_PROMOTE) board_pawn_promote (&moved, arr.data[i].to, PIECE_QUEEN); // TODO: Promotion logic
 		board_next_turn(&moved);
 		float curr;
-		if (depth > 0)
-		{
-			curr = minimax(engine, &moved, depth - 1, alpha, beta);
-		}
-		else
-		{
-			curr = board_evaluate(engine, &moved);
-		}
+		curr = minimax(engine, &moved, depth - 1, alpha, beta);
 		if (b->turn == PIECE_WHITE)
 		{
 			score = MAX(score, curr);

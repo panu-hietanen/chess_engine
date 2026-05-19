@@ -5,7 +5,6 @@
 
 .vscode/*
 CLAUDE.md
-resources/weights/*
 
 # User-specific files
 *.rsuser

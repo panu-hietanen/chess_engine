@@ -148,6 +148,19 @@ int main() {
 				break;
 			}
 		}
+		if (gameState == STATE_DEFAULT && b.turn == PIECE_BLACK)
+		{
+			Move em = engine_best_move(engine, &b);
+			MoveResult er = board_register_move(&b, em);
+			if (er == MOVE_PROMOTE) board_pawn_promote(&b, em.to, PIECE_QUEEN);
+			board_next_turn(&b);
+			if (board_no_moves(&b, b.turn))
+			{
+				Point king = board_find_king(&b, b.turn);
+				gameState = board_in_check(&b, king) ? STATE_BLACK_WON : STATE_STALEMATE;
+			}
+		}
+
 		BeginDrawing();
 		{
 			ClearBackground(BACKGROUND_COLOUR);

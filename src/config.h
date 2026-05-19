@@ -40,7 +40,7 @@
 #define PROMOTE_OFFSET_X	  (BOARD_OFFSET_X + BOARD_PX + 50)
 #define PROMOTE_OFFSET_Y	  (BOARD_OFFSET_Y)
 
-#define RESOURCES_PATH		  "C:/Dev/C/chess_v1/resources/"
+#define RESOURCES_PATH		  "C:/Dev/C/chess_engine/resources/"
 #define MAX_PATH_LENGTH		  48
 #define MAX_PIECE_NAME_LENGTH 16
 
@@ -53,7 +53,7 @@
 #define QUEEN_VALUE			  900
 
 #define MAX_LAYERS            16
-#define WEIGHTS_PATH          "/home/phietanen/dev/chess_engine/resources/weights/chess_weights_soft_6"
+#define WEIGHTS_PATH          "C:/Dev/C/chess_engine/resources/weights/chess_weights_soft_6"
 #define PIECE_FEATURES        768
 #define STATE_FEATURES        13
 #define FEATURES              (PIECE_FEATURES + STATE_FEATURES)

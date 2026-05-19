@@ -16,8 +16,9 @@ Engine* engine_create(const char* path);
 void engine_destroy(Engine* engine);
 
 void engine_search(const Board* b, MoveArray* arr);
+Move engine_best_move(const Engine* engine, const Board* b);
 
-int board_evaluate(const Board* b);
+float board_evaluate(const Engine* engine, const Board* b);
 void board_to_features(const Board* b, float* features);
 float engine_forward(const Engine* engine, float* features);
 

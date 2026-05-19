@@ -45,8 +45,8 @@ int main(void)
 		else
 		{
 			m = engine_best_move(engine, &b);
-			char from_char = 'a' + m.from.x;
-			char to_char = 'a' + m.to.x;
+			char from_char = 'a' + m.from.x + 1;
+			char to_char = 'a' + m.to.x + 1;
 			printf(
 				"Black played %c%d to %c%d\n", 
 				from_char, m.from.y, to_char, m.to.y
